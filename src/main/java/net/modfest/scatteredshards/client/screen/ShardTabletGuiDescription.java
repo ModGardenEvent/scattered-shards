@@ -6,7 +6,9 @@ import io.github.cottonmc.cotton.gui.client.LightweightGuiDescription;
 import io.github.cottonmc.cotton.gui.widget.WListPanel;
 import io.github.cottonmc.cotton.gui.widget.WPanelWithInsets;
 import io.github.cottonmc.cotton.gui.widget.WPlainPanel;
+import io.github.cottonmc.cotton.gui.widget.data.HorizontalAlignment;
 import io.github.cottonmc.cotton.gui.widget.data.Insets;
+import io.github.cottonmc.cotton.gui.widget.data.Vec2i;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.text.Text;
 import net.minecraft.util.Colors;
@@ -16,7 +18,6 @@ import net.modfest.scatteredshards.api.ShardCollection;
 import net.modfest.scatteredshards.api.ShardLibrary;
 import net.modfest.scatteredshards.api.shard.Shard;
 import net.modfest.scatteredshards.api.shard.ShardType;
-import net.modfest.scatteredshards.client.ScatteredShardsClient;
 import net.modfest.scatteredshards.client.screen.widget.WLeftRightPanel;
 import net.modfest.scatteredshards.client.screen.widget.WShardPanel;
 import net.modfest.scatteredshards.client.screen.widget.WShardSetPanel;
@@ -58,7 +59,6 @@ public class ShardTabletGuiDescription extends LightweightGuiDescription {
 		int panelHeight = selectorPanel.getHeight();
 
 		WScaledLabel progressVisited = new WScaledLabel(() -> {
-			if (!ScatteredShardsClient.hasShiftDown()) return Text.empty();
 			int visitedSets = 0;
 			for (Collection<Identifier> set : library.shardSets().asMap().values()) {
 				for (Identifier identifier : set) {
@@ -68,19 +68,22 @@ public class ShardTabletGuiDescription extends LightweightGuiDescription {
 					}
 				}
 			}
-			return Text.translatable("gui.scattered_shards.tablet.label.progress.started", "%.0f%%".formatted(100 * visitedSets / (float) library.shardSets().asMap().keySet().size()));
+			return Text.translatable("gui.scattered_shards.tablet.label.progress.started", "%d/%d".formatted(visitedSets, library.shardSets().asMap().size()));
 		}, 1.0f).setColor(Colors.LIGHT_GRAY);
 		selectorPanel.add(progressVisited, 0, 0);
-		progressVisited.setSize(80, 10);
-		progressVisited.setLocation(13, panelHeight - 20);
+		progressVisited.setSize(100, 10);
+		progressVisited.setLocation(selectorPanel.getInsets().left(), panelHeight - selectorPanel.getInsets().bottom() - 10);
+		progressVisited.setHorizontalAlignment(HorizontalAlignment.LEFT);
 
-		WScaledLabel progressTotal = new WScaledLabel(() -> {
-			if (!ScatteredShardsClient.hasShiftDown()) return Text.empty();
-			return Text.translatable("gui.scattered_shards.tablet.label.progress.total", "%.0f%%".formatted(100 * collection.size() / (float) library.shards().size()));
-		}, 1.0f).setColor(Colors.LIGHT_GRAY);
+		WScaledLabel progressTotal = new WScaledLabel(() -> Text.translatable("gui.scattered_shards.tablet.label.progress.total", "%d/%d".formatted(collection.size(), library.shards().size())), 1.0f).setColor(Colors.LIGHT_GRAY);
 		selectorPanel.add(progressTotal, 0, 0);
-		progressTotal.setSize(80, 10);
-		progressTotal.setLocation(selectorPanel.getWidth() - 72, panelHeight - 20);
+		progressTotal.setHorizontalAlignment(HorizontalAlignment.RIGHT);
+		progressTotal.setSize(100, 10);
+		progressTotal.setLocation(selectorPanel.getWidth() - selectorPanel.getInsets().right() - 100 - 10 /* scrollbar */, panelHeight - selectorPanel.getInsets().bottom() - 10);
+
+		setTitleColor(0xFF_FFFFFF);
+		setTitlePos(new Vec2i(root.getX() + root.getWidth() / 2, root.getAbsoluteY() - 10));
+		setTitleAlignment(HorizontalAlignment.CENTER);
 
 		ClientPlayNetworking.send(C2SRequestGlobalCollection.INSTANCE);
 
@@ -123,7 +126,7 @@ public class ShardTabletGuiDescription extends LightweightGuiDescription {
 
 	public static class Screen extends CottonClientScreen {
 		public Screen(ShardCollection collection, ShardLibrary library) {
-			super(new ShardTabletGuiDescription(collection, library));
+			super(Text.translatable("menu.scattered_shards.collection"), new ShardTabletGuiDescription(collection, library));
 		}
 
 		@Override

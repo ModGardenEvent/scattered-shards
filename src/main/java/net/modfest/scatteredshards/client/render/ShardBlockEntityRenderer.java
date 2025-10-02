@@ -66,10 +66,7 @@ public class ShardBlockEntityRenderer implements BlockEntityRenderer<ShardBlockE
 
 		float alpha = collected ? 0.5f : 1f;
 
-		// old VertexConsumer buf = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucentCull(ShardType.getBackingTexture(shard.shardTypeId())));
-		// .7 VertexConsumer buf = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(ShardType.getBackingTexture(shard.shardTypeId())));
-		Identifier bt = ShardType.getBackingTexture(shard.shardTypeId());
-		VertexConsumer buf = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucent(bt));
+		VertexConsumer buf = vertexConsumers.getBuffer(RenderLayer.getItemEntityTranslucentCull(ShardType.getBackingTexture(shard.shardTypeId())));
 
 		/*
 		 * A note about scale here:
@@ -129,9 +126,7 @@ public class ShardBlockEntityRenderer implements BlockEntityRenderer<ShardBlockE
 
 		//Draw card front
 		Vector3f revNormal = normal.mul(-1, -1, -1);
-		Identifier ft = ShardType.getFrontTexture(shard.shardTypeId());
-		// cheating: .5 weirdly only wants to use the last texture, so we just use a different renderlayer /shrug
-		buf = vertexConsumers.getBuffer(RenderLayer.getItemEntityTranslucentCull(ft));
+		buf = vertexConsumers.getBuffer(RenderLayer.getItemEntityTranslucentCull(ShardType.getFrontTexture(shard.shardTypeId())));
 		buf
 			.vertex(matrices.peek().getPositionMatrix(), dl.x, dl.y, dl.z)
 			.color(1, 1, 1, alpha)
@@ -167,7 +162,7 @@ public class ShardBlockEntityRenderer implements BlockEntityRenderer<ShardBlockE
 		ShardIconOffsets.Offset offset = shardType.getOffsets().getNormal();
 
 		shard.icon().ifLeft(stack -> {
-			matrices.translate((offset.left() - 8) * metersPerPixel, (offset.up() - 8) * metersPerPixel, -0.005f); //extra -0.002 here to prevent full-cubes from zfighting the card
+			matrices.translate((4 - offset.left()) * metersPerPixel, (8 - offset.up()) * metersPerPixel, -0.005f); //extra -0.002 here to prevent full-cubes from zfighting the card
 			matrices.scale(-0.38f, 0.38f, 0.001f /*0.6f*/);
 
 			MinecraftClient.getInstance().getItemRenderer().renderItem(stack, ItemDisplayContext.GUI, actualLight, OverlayTexture.DEFAULT_UV, matrices, vertexConsumers, entity.getWorld(), 0);
